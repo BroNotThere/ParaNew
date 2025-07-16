@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pterodactyl + Blueprint + Tailscale Quick Guide</title>
+  <style>
+    /* ---------- Theme Variables ---------- */
+    :root{
+      --bg:#f9fbfe;
+      --fg:#1f2937;
+      --accent:#2563eb;
+      --card:#ffffff;
+      --border:#e2e8f0;
+    }
+    /* ---------- Base Reset ---------- */
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);color:var(--fg);line-height:1.6}
+    /* ---------- Header ---------- */
+    header{text-align:center;padding:3rem 1rem 2rem;
+      background:var(--accent);color:#fff}
+    header h1{font-size:2.3rem;font-weight:700}
+    .subtitle{opacity:.9;font-size:1rem}
+    /* ---------- Nav ---------- */
+    nav{display:flex;justify-content:center;gap:1.5rem;
+      background:#fff;border-bottom:1px solid var(--border)}
+    nav a{padding:.9rem 0;color:var(--fg);text-decoration:none;font-weight:600}
+    nav a:hover{color:var(--accent)}
+    /* ---------- Sections ---------- */
+    section{max-width:760px;margin:2.5rem auto;padding:0 1.2rem}
+    section h2{margin-bottom:1rem;color:var(--accent)}
+    /* ---------- Code Block ---------- */
+    .code-block{
+      background:var(--card);border:1px solid var(--border);
+      padding:1rem;border-radius:6px;overflow-x:auto;margin-bottom:.8rem;
+      font-family:ui-monospace,monospace;white-space:pre}
+    /* ---------- Buttons ---------- */
+    .copy-btn{
+      background:var(--accent);color:#fff;border:none;
+      padding:.5rem 1.2rem;border-radius:4px;cursor:pointer;margin-bottom:1.3rem}
+    .copy-btn:hover{opacity:.85}
+    /* ---------- Tips ---------- */
+    .tip{
+      background:#eef4ff;border-left:4px solid var(--accent);
+      padding:.8rem 1rem;border-radius:4px;margin-bottom:1.5rem;font-size:.95rem}
+    /* ---------- Footer / About ---------- */
+    .about{text-align:center}
+    footer{text-align:center;font-size:.8rem;padding:2rem 0 3rem;color:#64748b}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pterodactyl Installation Quick‑Start</h1>
+    <p class="subtitle">Blueprint one‑click • SSHX • Tailscale • Playit • VPS basics</p>
+  </header>
+
+  <nav>
+    <a href="#basics">Basics</a>
+    <a href="#ptero">Pterodactyl</a>
+    <a href="#playit">Playit IPv4</a>
+    <a href="#tailscale">Tailscale</a>
+    <a href="#about">About</a>
+  </nav>
+
+  <!-- ================= BASICS ================= -->
+  <section id="basics">
+    <h2>🛠️ Essential VPS Commands (Debian & Ubuntu)</h2>
+    <p>Everything you need before installing Pterodactyl.</p>
+
+<pre class="code-block" id="code-basics">
+# ── 1. Become root (or use sudo in front of each cmd) ──
+su                       # or: sudo su
+
+# ── 2. Update & upgrade the OS ──
+apt update && apt upgrade -y
+
+# ── 3. Install basic tools ──
+apt install -y curl wget git unzip htop ufw neofetch
+
+# ── 4. View hardware / spec info ──
+neofetch                  # pretty system summary
+htop                      # live CPU/RAM monitor (Ctrl+Q to quit)
+
+# ── 5. Secure firewall (open SSH + HTTP/HTTPS) ──
+ufw allow 22/tcp
+ufw allow 80/tcp 443/tcp
+ufw enable
+
+# ── 6. Install & test Docker (required by Pterodactyl) ──
+apt install -y docker.io
+systemctl enable --now docker
+docker run hello-world    # success message = Docker OK
+</pre>
+    <button class="copy-btn" data-target="code-basics">Copy</button>
+
+    <div class="tip">
+      <strong>Why these?</strong><br>
+      <b>curl / wget</b> to pull scripts • <b>git</b> for cloning repos •
+      <b>ufw</b> to lock down ports • <b>docker hello‑world</b> confirms your VPS supports Docker & systemctl.
+    </div>
+  </section>
+
+  <!-- ================= PTERODACTYL ================= -->
+  <section id="ptero">
+    <h2>🚀 One‑Click Pterodactyl Install (Blueprint)</h2>
+    <p>Run the single command on a fresh server (Ubuntu 20.04+/Debian 11+).</p>
+<pre class="code-block" id="code-ptero">
+bash <(curl -s https://raw.githubusercontent.com/ShivakshChaudhary/blueprint-installer/main/blueprint-installer.sh)
+</pre>
+    <button class="copy-btn" data-target="code-ptero">Copy</button>
+
+    <div class="tip">
+      <strong>What it does:</strong> Installs Panel + Wings, MariaDB, NGINX, SSL, configures firewall, sets swap (if needed).
+    </div>
+  </section>
+
+  <!-- ================= PLAYIT ================= -->
+  <section id="playit">
+    <h2>🌐 Expose SSH with Playit Tunnel</h2>
+    <p>Add the Playit repo, install, start the service, and create a TCP+UDP tunnel on port 22.</p>
+<pre class="code-block" id="code-playit">
+curl -SsL https://playit-cloud.github.io/ppa/key.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/playit.gpg >/dev/null
+echo "deb [signed-by=/etc/apt/trusted.gpg.d/playit.gpg] https://playit-cloud.github.io/ppa/data ./" | sudo tee /etc/apt/sources.list.d/playit-cloud.list
+sudo apt update
+sudo apt install playit -y
+sudo systemctl enable --now playit
+playit setup
+</pre>
+    <button class="copy-btn" data-target="code-playit">Copy</button>
+
+    <div class="tip"><strong>Next step ▸</strong> Claim the link ➜ create a <b>TCP + UDP</b> tunnel on <b>Port 22</b> ➜ use the generated IP:PORT for SSH.</div>
+  </section>
+
+  <!-- ================= TAILSCALE / TMATE ================= -->
+  <section id="tailscale">
+    <h2>🔒 Tailscale via tmate (for headless servers)</h2>
+
+    <h3>Step 1 – Launch tmate session</h3>
+<pre class="code-block" id="code-tmate">
+apt update && apt install -y tmate
+tmate
+# Copy the SSH line shown (e.g. ssh ...@tmate.io) and connect from your PC
+</pre>
+    <button class="copy-btn" data-target="code-tmate">Copy</button>
+
+    <h3>Step 2 – Install Tailscale inside tmate</h3>
+    <p>Sign in at <a href="https://tailscale.com" target="_blank">tailscale.com</a> → <em>Add Machine ▸ Linux Server</em> → copy script → paste into tmate.</p>
+
+    <h3>Optional SSHX one‑liner (quick remote shell)</h3>
+<pre class="code-block" id="code-sshx">
+curl -sSf https://sshx.io/get | sh -s run
+</pre>
+    <button class="copy-btn" data-target="code-sshx">Copy</button>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="about" class="about">
+    <h2>About This Page</h2>
+    <p>Zero‑bloat static HTML/CSS/JS cheat‑sheet for fast Pterodactyl deployments.<br>
+       Fork or reuse under the MIT License.</p>
+  </section>
+
+  <footer>© 2025 QuickStart Docs • MIT License</footer>
+
+  <script>
+    /* Copy-to-clipboard for every .copy-btn */
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const code = document.getElementById(btn.dataset.target).textContent.trim();
+        navigator.clipboard.writeText(code).then(()=>{
+          const old = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(()=>btn.textContent=old,1500);
+        }).catch(()=>btn.textContent='Error');
+      });
+    });
+  </script>
+</body>
+</html>
